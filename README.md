@@ -1,6 +1,6 @@
 # WCA Stats
 
-A modern statistics dashboard for speedcubing data. Import your csTimer sessions and visualize your solving performance with beautiful charts and comprehensive analytics.
+A modern statistics dashboard for speedcubing data. Import your csTimer sessions and visualize your solving performance with charts and analytics.
 <img width="1612" height="306" alt="Screenshot 2025-12-17 at 3 16 22 PM" src="https://github.com/user-attachments/assets/1a269e15-aeeb-477b-b8fa-09995c682de3" />
 <img width="1623" height="655" alt="Screenshot 2025-12-17 at 3 16 49 PM" src="https://github.com/user-attachments/assets/477ea156-70db-4ae2-b5c5-4eee817640b3" />
 
