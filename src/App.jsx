@@ -474,6 +474,18 @@ const getInitialData = () => {
   if (savedData) {
     try {
       const data = JSON.parse(savedData);
+      // Check if it's already parsed sessions (array) or raw csTimer data (object)
+      if (Array.isArray(data)) {
+        // Already parsed sessions - restore dates
+        return data.map((session) => ({
+          ...session,
+          solves: session.solves.map((solve) => ({
+            ...solve,
+            date: new Date(solve.date),
+          })),
+        }));
+      }
+      // Legacy: raw csTimer data - parse it
       return parseCsTimerData(data);
     } catch (error) {
       console.error('Error loading saved data:', error);
@@ -505,8 +517,16 @@ const App = () => {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        localStorage.setItem(STORAGE_KEY, e.target.result);
         const parsedSessions = parseCsTimerData(data);
+
+        // Store parsed data instead of raw JSON (much smaller)
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedSessions));
+        } catch (storageError) {
+          console.warn('Could not save to localStorage:', storageError);
+          // Continue anyway - data just won't persist
+        }
+
         setSessions(parsedSessions);
         if (parsedSessions.length > 0) {
           setSelectedSession(parsedSessions[0].id);
