@@ -318,16 +318,28 @@ const calculateStats = (sessions) => {
       ? (sortedByTime[mid - 1].time + sortedByTime[mid].time) / 2
       : sortedByTime[mid].time;
 
-  const calculateAoN = (solves, n) => {
-    if (solves.length < n) return null;
-    const lastN = solves.slice(-n);
-    const validLastN = lastN.filter((s) => s.time > 0);
-    if (validLastN.length < n) return null;
+  const calculateBestAoN = (solves, n) => {
+    const validSolves = solves.filter((s) => s.time > 0);
+    if (validSolves.length < n) return null;
 
-    const sorted = [...validLastN].sort((a, b) => a.time - b.time);
-    const trimmed = sorted.slice(1, -1);
-    const trimmedSum = trimmed.reduce((acc, s) => acc + s.time, 0);
-    return trimmedSum / trimmed.length;
+    // Sort by timestamp to get chronological order
+    const sortedByDate = [...validSolves].sort(
+      (a, b) => a.timestamp - b.timestamp
+    );
+
+    let bestAvg = Infinity;
+
+    for (let i = n - 1; i < sortedByDate.length; i++) {
+      const window = sortedByDate.slice(i - n + 1, i + 1);
+      const sorted = [...window].sort((a, b) => a.time - b.time);
+      const trimmed = sorted.slice(1, -1);
+      const avg = trimmed.reduce((acc, s) => acc + s.time, 0) / trimmed.length;
+      if (avg < bestAvg) {
+        bestAvg = avg;
+      }
+    }
+
+    return bestAvg === Infinity ? null : bestAvg;
   };
 
   const sortedByDate = [...allSolves].sort((a, b) => b.timestamp - a.timestamp);
@@ -417,8 +429,8 @@ const calculateStats = (sessions) => {
     worstSingle,
     average,
     median,
-    ao5: calculateAoN(allSolves, 5),
-    ao12: calculateAoN(allSolves, 12),
+    ao5: calculateBestAoN(allSolves, 5),
+    ao12: calculateBestAoN(allSolves, 12),
     recentSolves: sortedByDate.slice(0, 10),
     improvementRate,
     timeToSubX,
@@ -650,14 +662,14 @@ const App = () => {
           <div className="stat-value">
             {stats.ao5 ? formatTime(stats.ao5) : '—'}
           </div>
-          <div className="stat-label">Ao5</div>
+          <div className="stat-label">Best Ao5</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">📈</div>
           <div className="stat-value">
             {stats.ao12 ? formatTime(stats.ao12) : '—'}
           </div>
-          <div className="stat-label">Ao12</div>
+          <div className="stat-label">Best Ao12</div>
         </div>
       </section>
 
