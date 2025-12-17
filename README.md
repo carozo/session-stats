@@ -1,16 +1,52 @@
-# React + Vite
+# WCA Stats
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern statistics dashboard for speedcubing data. Import your csTimer sessions and visualize your solving performance with beautiful charts and comprehensive analytics.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Statistics
 
-## React Compiler
+- **Best Single / Worst Single** — Track your PBs and outliers
+- **Mean & Median** — Central tendency measures for your times
+- **Ao5, Ao12, Ao100** — Rolling averages with WCA-style trimming
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Progress Analytics
 
-## Expanding the ESLint configuration
+- **Improvement Rate** — Seconds improved per 100 solves
+- **Time to Sub-X** — Estimated solves to reach your next goal
+- **Time Since PB** — Days and solves since your last personal best
+- **Solve Frequency** — Average solves per day and active weeks
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Visualization
+
+- Interactive performance graph with multiple overlays:
+  - Solve times with trend line
+  - Rolling Ao5, Ao12, Ao100
+  - Mean and ±1 standard deviation bands
+- Session-based filtering with WCA event icons
+
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+## Usage
+
+1. Export your data from [csTimer](https://cstimer.net): `Export → Export to file`
+2. Drag & drop the JSON file into the app (or click to browse)
+3. Select a session to view detailed stats and graphs
+
+## Tech Stack
+
+- React 19
+- Recharts
+- Vite
+
+## License
+
+MIT
+```

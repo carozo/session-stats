@@ -7,11 +7,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
 } from 'recharts';
 import './App.css';
 
-// Import event icons
 import icon222 from './assets/222.svg';
 import icon333 from './assets/333.svg';
 import icon333bf from './assets/333bf.svg';
@@ -34,16 +32,12 @@ import iconPyram from './assets/pyram.svg';
 import iconSkewb from './assets/skewb.svg';
 import iconSq1 from './assets/sq1.svg';
 
-// Map csTimer scrType codes to icons
-// csTimer uses codes like '222so', '333', '444wca', 'mgmp', 'clkwca', etc.
 const getScrTypeIcon = (scrType) => {
   if (!scrType) return null;
   const s = scrType.toLowerCase();
 
-  // 2x2
   if (s.startsWith('222') || s === '2x2x2') return icon222;
 
-  // 3x3 variants - check specific ones first
   if (s.includes('333bf') || s.includes('3bf') || s === 'bld') return icon333bf;
   if (s.includes('333fm') || s === 'fmc') return icon333fm;
   if (s.includes('333ft') || s === 'feet') return icon333ft;
@@ -52,22 +46,17 @@ const getScrTypeIcon = (scrType) => {
   if (s.includes('333oh') || s === 'oh') return icon333oh;
   if (s.startsWith('333') || s === '3x3x3') return icon333;
 
-  // 4x4 variants
   if (s.includes('444bf') || s === '4bld') return icon444bf;
   if (s.startsWith('444') || s === '4x4x4') return icon444;
 
-  // 5x5 variants
   if (s.includes('555bf') || s === '5bld') return icon555bf;
   if (s.startsWith('555') || s === '5x5x5') return icon555;
 
-  // 6x6, 7x7
   if (s.startsWith('666') || s === '6x6x6') return icon666;
   if (s.startsWith('777') || s === '7x7x7') return icon777;
 
-  // Clock
   if (s.includes('clk') || s === 'clock') return iconClock;
 
-  // Megaminx
   if (
     s.includes('mgm') ||
     s.includes('minx') ||
@@ -76,21 +65,16 @@ const getScrTypeIcon = (scrType) => {
   )
     return iconMinx;
 
-  // Pyraminx
   if (s.includes('pyram') || s.includes('pyr')) return iconPyram;
 
-  // Skewb
   if (s.includes('skewb') || s.includes('skb')) return iconSkewb;
 
-  // Square-1
   if (s.includes('sq1') || s.includes('sq-1') || s === 'square-1')
     return iconSq1;
 
-  // Magic
   if (s === 'magic') return iconMagic;
   if (s === 'mmagic' || s.includes('master')) return iconMmagic;
 
-  // Subsets/training (corners, edges, LL, etc.) - default to 3x3
   if (
     s.includes('corners') ||
     s.includes('edges') ||
@@ -108,20 +92,16 @@ const getScrTypeIcon = (scrType) => {
   return null;
 };
 
-// Get event icon from session
 const getEventIcon = (session) => {
-  // Check scrType first (csTimer's scramble type)
   console.log(session);
   const scrType = session.scrType || '';
   const iconFromScrType = getScrTypeIcon(scrType);
   if (iconFromScrType) return iconFromScrType;
 
-  // Try to match from session name
   const nameLower = session.name.toLowerCase().trim();
   const iconFromName = getScrTypeIcon(nameLower);
   if (iconFromName) return iconFromName;
 
-  // Search for event keywords in the name
   for (const keyword of [
     '222',
     '333',
@@ -140,11 +120,9 @@ const getEventIcon = (session) => {
     }
   }
 
-  // Default to 3x3 icon
   return icon333;
 };
 
-// Helper to format time from milliseconds
 const formatTime = (ms) => {
   if (ms === null || ms === undefined || ms === -1) return 'DNF';
   if (ms === -2) return 'DNS';
@@ -160,17 +138,14 @@ const formatTime = (ms) => {
   return totalSeconds.toFixed(2);
 };
 
-// Helper to format any number to 2 decimal places
 const formatNumber = (num) => {
   if (num === null || num === undefined) return '—';
   return num.toFixed(2);
 };
 
-// Parse csTimer JSON format
 const parseCsTimerData = (data) => {
   const sessions = [];
 
-  // Parse session metadata from properties.sessionData
   let sessionMetadata = {};
   if (data.properties?.sessionData) {
     try {
@@ -206,7 +181,6 @@ const parseCsTimerData = (data) => {
           ? String(meta.name)
           : `Session ${sessionNumber}`;
 
-      // Get scramble type from metadata (csTimer uses 'opt.scrType' for puzzle type)
       const scrType = meta?.opt?.scrType || '';
 
       sessions.push({
@@ -221,7 +195,6 @@ const parseCsTimerData = (data) => {
   return sessions.filter((s) => s.solves.length > 0);
 };
 
-// Calculate linear regression for trend line
 const calculateLinearRegression = (data) => {
   if (data.length < 2) return null;
 
@@ -244,7 +217,6 @@ const calculateLinearRegression = (data) => {
   return { slope, intercept };
 };
 
-// Calculate standard deviation
 const calculateStdDev = (values) => {
   if (values.length < 2) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -253,7 +225,6 @@ const calculateStdDev = (values) => {
   return Math.sqrt(variance);
 };
 
-// Prepare chart data for a session
 const prepareChartData = (solves) => {
   const validSolves = solves.filter((s) => s.time > 0);
   const sortedByDate = [...validSolves].sort(
@@ -271,7 +242,6 @@ const prepareChartData = (solves) => {
     scramble: solve.scramble,
   }));
 
-  // Calculate trend line
   const regression = calculateLinearRegression(chartData);
 
   if (regression) {
@@ -280,9 +250,7 @@ const prepareChartData = (solves) => {
     });
   }
 
-  // Calculate rolling averages and std dev bands
   chartData.forEach((point, i) => {
-    // Ao5
     if (i >= 4) {
       const last5 = chartData.slice(i - 4, i + 1).map((p) => p.time);
       const sorted = [...last5].sort((a, b) => a - b);
@@ -290,7 +258,6 @@ const prepareChartData = (solves) => {
       point.ao5 = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
     }
 
-    // Ao12
     if (i >= 11) {
       const last12 = chartData.slice(i - 11, i + 1).map((p) => p.time);
       const sorted = [...last12].sort((a, b) => a - b);
@@ -298,7 +265,6 @@ const prepareChartData = (solves) => {
       point.ao12 = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
     }
 
-    // Ao100
     if (i >= 99) {
       const last100 = chartData.slice(i - 99, i + 1).map((p) => p.time);
       const sorted = [...last100].sort((a, b) => a - b);
@@ -307,7 +273,6 @@ const prepareChartData = (solves) => {
       point.ao100 = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
     }
 
-    // Standard deviation bands (mean ± 1 std dev)
     point.mean = mean;
     point.stdUpper = mean + stdDev;
     point.stdLower = mean - stdDev;
@@ -316,7 +281,6 @@ const prepareChartData = (solves) => {
   return { chartData, regression, mean, stdDev };
 };
 
-// Calculate statistics
 const calculateStats = (sessions) => {
   const allSolves = sessions.flatMap((s) => s.solves);
   const validSolves = allSolves.filter((s) => s.time > 0);
@@ -327,22 +291,33 @@ const calculateStats = (sessions) => {
       bestSingle: null,
       worstSingle: null,
       average: null,
+      median: null,
       ao5: null,
       ao12: null,
       recentSolves: [],
+      improvementRate: null,
+      timeToSubX: null,
+      solvesByDay: {},
+      solvesByWeek: {},
+      timeSinceLastPB: null,
+      solvesSinceLastPB: null,
     };
   }
 
-  // Sort by time for best/worst
   const sortedByTime = [...validSolves].sort((a, b) => a.time - b.time);
   const bestSingle = sortedByTime[0];
   const worstSingle = sortedByTime[sortedByTime.length - 1];
 
-  // Calculate average
   const sum = validSolves.reduce((acc, s) => acc + s.time, 0);
   const average = sum / validSolves.length;
 
-  // Calculate Ao5 (remove best and worst, average the rest)
+  // Calculate median
+  const mid = Math.floor(sortedByTime.length / 2);
+  const median =
+    sortedByTime.length % 2 === 0
+      ? (sortedByTime[mid - 1].time + sortedByTime[mid].time) / 2
+      : sortedByTime[mid].time;
+
   const calculateAoN = (solves, n) => {
     if (solves.length < n) return null;
     const lastN = solves.slice(-n);
@@ -350,27 +325,112 @@ const calculateStats = (sessions) => {
     if (validLastN.length < n) return null;
 
     const sorted = [...validLastN].sort((a, b) => a.time - b.time);
-    // Remove best and worst
     const trimmed = sorted.slice(1, -1);
     const trimmedSum = trimmed.reduce((acc, s) => acc + s.time, 0);
     return trimmedSum / trimmed.length;
   };
 
-  // Get recent solves sorted by timestamp
   const sortedByDate = [...allSolves].sort((a, b) => b.timestamp - a.timestamp);
+  const sortedByDateAsc = [...validSolves].sort(
+    (a, b) => a.timestamp - b.timestamp
+  );
+
+  // Calculate improvement rate (ms per solve, using linear regression)
+  let improvementRate = null;
+  if (sortedByDateAsc.length >= 10) {
+    const n = sortedByDateAsc.length;
+    let sumX = 0,
+      sumY = 0,
+      sumXY = 0,
+      sumX2 = 0;
+    sortedByDateAsc.forEach((solve, i) => {
+      sumX += i;
+      sumY += solve.time;
+      sumXY += i * solve.time;
+      sumX2 += i * i;
+    });
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    // Convert to seconds per 100 solves (negative means improving)
+    improvementRate = (slope * 100) / 1000;
+  }
+
+  // Calculate time to sub-X (estimate based on current average and improvement rate)
+  // Target is the next "round" time below current average (e.g., sub-20, sub-15, sub-10)
+  let timeToSubX = null;
+  if (improvementRate !== null && improvementRate < 0) {
+    const currentAvgSeconds = average / 1000;
+    // Find the next target below current average
+    const targets = [
+      60, 55, 50, 45, 40, 35, 30, 25, 20, 18, 16, 15, 14, 13, 12, 11, 10, 9, 8,
+      7, 6, 5,
+    ];
+    const targetTime = targets.find((t) => t < currentAvgSeconds);
+    if (targetTime) {
+      const secondsToImprove = currentAvgSeconds - targetTime;
+      // improvementRate is seconds per 100 solves (negative)
+      const solvesNeeded = Math.ceil(
+        (secondsToImprove / Math.abs(improvementRate)) * 100
+      );
+      timeToSubX = { target: targetTime, solves: solvesNeeded };
+    }
+  }
+
+  // Calculate solve count by day and week
+  const solvesByDay = {};
+  const solvesByWeek = {};
+  validSolves.forEach((solve) => {
+    const date = solve.date;
+    const dayKey = date.toISOString().split('T')[0];
+    solvesByDay[dayKey] = (solvesByDay[dayKey] || 0) + 1;
+
+    // Get week key (ISO week)
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(
+      ((date - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7
+    );
+    const weekKey = `${date.getFullYear()}-W${weekNumber
+      .toString()
+      .padStart(2, '0')}`;
+    solvesByWeek[weekKey] = (solvesByWeek[weekKey] || 0) + 1;
+  });
+
+  // Calculate time since last PB
+  let timeSinceLastPB = null;
+  let solvesSinceLastPB = null;
+  if (bestSingle) {
+    const pbDate = bestSingle.date;
+    const now = new Date();
+    const diffTime = Math.abs(now - pbDate);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    timeSinceLastPB = diffDays;
+
+    // Count solves after PB
+    const pbTimestamp = bestSingle.timestamp;
+    solvesSinceLastPB = sortedByDateAsc.filter(
+      (s) => s.timestamp > pbTimestamp
+    ).length;
+  }
 
   return {
     totalSolves: allSolves.length,
     bestSingle,
     worstSingle,
     average,
+    median,
     ao5: calculateAoN(allSolves, 5),
     ao12: calculateAoN(allSolves, 12),
     recentSolves: sortedByDate.slice(0, 10),
+    improvementRate,
+    timeToSubX,
+    solvesByDay,
+    solvesByWeek,
+    timeSinceLastPB,
+    solvesSinceLastPB,
   };
 };
 
-// Graph line options configuration
+const STORAGE_KEY = 'cstimer-data';
+
 const GRAPH_OPTIONS = {
   solves: { key: 'time', label: 'Solve Times', color: '#00d4ff', dot: true },
   trend: {
@@ -397,9 +457,25 @@ const GRAPH_OPTIONS = {
   },
 };
 
+const getInitialData = () => {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      return parseCsTimerData(data);
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  }
+  return [];
+};
+
 const App = () => {
-  const [sessions, setSessions] = useState([]);
-  const [selectedSession, setSelectedSession] = useState(null);
+  const [sessions, setSessions] = useState(getInitialData);
+  const [selectedSession, setSelectedSession] = useState(() => {
+    const initial = getInitialData();
+    return initial.length > 0 ? initial[0].id : null;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [activeGraphs, setActiveGraphs] = useState(['trend', 'ao5']);
   const fileInputRef = useRef(null);
@@ -417,6 +493,7 @@ const App = () => {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
+        localStorage.setItem(STORAGE_KEY, e.target.result);
         const parsedSessions = parseCsTimerData(data);
         setSessions(parsedSessions);
         if (parsedSessions.length > 0) {
@@ -453,7 +530,12 @@ const App = () => {
     if (file) handleFileUpload(file);
   };
 
-  // Calculate stats for selected session or all sessions
+  const handleClearAll = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setSessions([]);
+    setSelectedSession(null);
+  };
+
   const currentSession = selectedSession
     ? sessions.find((s) => s.id === selectedSession)
     : null;
@@ -461,12 +543,10 @@ const App = () => {
   const stats = calculateStats(currentSession ? [currentSession] : sessions);
   const allStats = calculateStats(sessions);
 
-  // Prepare chart data when a session is selected
   const chartInfo = currentSession
     ? prepareChartData(currentSession.solves)
     : null;
 
-  // If no data uploaded, show upload interface
   if (sessions.length === 0) {
     return (
       <div className="app">
@@ -498,7 +578,7 @@ const App = () => {
             Drag & drop your JSON file here, or click to browse
           </p>
           <div className="upload-hint">
-            Export from csTimer: Menu → Export → Export to file
+            Export from csTimer: Export → Export to file
           </div>
         </div>
       </div>
@@ -507,7 +587,6 @@ const App = () => {
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="header">
         <div className="logo">
           <div className="logo-text">
@@ -520,6 +599,9 @@ const App = () => {
             onClick={() => fileInputRef.current?.click()}
           >
             <span>📤</span> Upload New
+          </button>
+          <button className="clear-btn" onClick={handleClearAll}>
+            <span>🗑️</span> Clear All
           </button>
           <input
             ref={fileInputRef}
@@ -541,7 +623,6 @@ const App = () => {
         </div>
       </header>
 
-      {/* Stats Overview */}
       <section className="stats-overview">
         <div className="stat-card">
           <div className="stat-icon">⚡</div>
@@ -556,6 +637,13 @@ const App = () => {
             {stats.average ? formatTime(stats.average) : '—'}
           </div>
           <div className="stat-label">Mean</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">📐</div>
+          <div className="stat-value">
+            {stats.median ? formatTime(stats.median) : '—'}
+          </div>
+          <div className="stat-label">Median</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">🎯</div>
@@ -573,7 +661,117 @@ const App = () => {
         </div>
       </section>
 
-      {/* Graph Section - shows when session is selected */}
+      <section className="advanced-stats">
+        <div className="section-header">
+          <h2 className="section-title">
+            <span className="section-title-icon">◆</span>
+            Progress & Analytics
+          </h2>
+        </div>
+        <div className="advanced-stats-grid">
+          <div className="advanced-stat-card">
+            <div className="advanced-stat-header">
+              <span className="advanced-stat-icon">📉</span>
+              <span className="advanced-stat-title">Improvement Rate</span>
+            </div>
+            <div className="advanced-stat-content">
+              {stats.improvementRate !== null ? (
+                <>
+                  <div
+                    className={`advanced-stat-value ${
+                      stats.improvementRate < 0 ? 'positive' : 'negative'
+                    }`}
+                  >
+                    {stats.improvementRate < 0 ? '↓' : '↑'}{' '}
+                    {formatNumber(Math.abs(stats.improvementRate))}s
+                  </div>
+                  <div className="advanced-stat-subtitle">per 100 solves</div>
+                </>
+              ) : (
+                <div className="advanced-stat-value muted">Need 10+ solves</div>
+              )}
+            </div>
+          </div>
+
+          <div className="advanced-stat-card">
+            <div className="advanced-stat-header">
+              <span className="advanced-stat-icon">🎯</span>
+              <span className="advanced-stat-title">Time to Sub-X</span>
+            </div>
+            <div className="advanced-stat-content">
+              {stats.timeToSubX ? (
+                <>
+                  <div className="advanced-stat-value">
+                    ~{stats.timeToSubX.solves.toLocaleString()} solves
+                  </div>
+                  <div className="advanced-stat-subtitle">
+                    to reach sub-{stats.timeToSubX.target}
+                  </div>
+                </>
+              ) : (
+                <div className="advanced-stat-value muted">
+                  {stats.improvementRate >= 0 ? 'Not improving' : 'Keep going!'}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="advanced-stat-card">
+            <div className="advanced-stat-header">
+              <span className="advanced-stat-icon">🏆</span>
+              <span className="advanced-stat-title">Time Since PB</span>
+            </div>
+            <div className="advanced-stat-content">
+              {stats.timeSinceLastPB !== null ? (
+                <>
+                  <div className="advanced-stat-value">
+                    {stats.timeSinceLastPB === 0
+                      ? 'Today!'
+                      : `${stats.timeSinceLastPB} day${
+                          stats.timeSinceLastPB !== 1 ? 's' : ''
+                        }`}
+                  </div>
+                  <div className="advanced-stat-subtitle">
+                    {stats.solvesSinceLastPB} solve
+                    {stats.solvesSinceLastPB !== 1 ? 's' : ''} ago
+                  </div>
+                </>
+              ) : (
+                <div className="advanced-stat-value muted">No PB yet</div>
+              )}
+            </div>
+          </div>
+
+          <div className="advanced-stat-card">
+            <div className="advanced-stat-header">
+              <span className="advanced-stat-icon">📅</span>
+              <span className="advanced-stat-title">Solve Frequency</span>
+            </div>
+            <div className="advanced-stat-content">
+              {Object.keys(stats.solvesByDay).length > 0 ? (
+                <>
+                  <div className="advanced-stat-value">
+                    {Math.round(
+                      stats.totalSolves / Object.keys(stats.solvesByDay).length
+                    )}{' '}
+                    avg/day
+                  </div>
+                  <div className="advanced-stat-subtitle">
+                    {Object.keys(stats.solvesByDay).length} active day
+                    {Object.keys(stats.solvesByDay).length !== 1
+                      ? 's'
+                      : ''} • {Object.keys(stats.solvesByWeek).length} week
+                    {Object.keys(stats.solvesByWeek).length !== 1 ? 's' : ''}
+                  </div>
+                </>
+              ) : (
+                <div className="advanced-stat-value muted">No data</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {currentSession && chartInfo && chartInfo.chartData.length > 1 && (
         <section className="graph-section">
           <div className="section-header">
@@ -600,7 +798,6 @@ const App = () => {
             </div>
           </div>
 
-          {/* Graph Options */}
           <div className="graph-options">
             {Object.entries(GRAPH_OPTIONS).map(([key, option]) => (
               <button
@@ -690,7 +887,6 @@ const App = () => {
                       labelFormatter={(label) => `Solve #${label}`}
                     />
 
-                    {/* Render active graph lines */}
                     {activeGraphs.includes('solves') && (
                       <Line
                         type="monotone"
@@ -785,9 +981,7 @@ const App = () => {
         </section>
       )}
 
-      {/* Main Content */}
       <div className="main-grid">
-        {/* Sessions Section */}
         <section className="events-section">
           <div className="section-header">
             <h2 className="section-title">
@@ -838,9 +1032,7 @@ const App = () => {
           </div>
         </section>
 
-        {/* Sidebar */}
         <aside className="sidebar">
-          {/* Personal Best Card */}
           <div className="pb-card">
             <div className="pb-header">
               <div className="pb-badge">🏅</div>
@@ -876,7 +1068,6 @@ const App = () => {
             </div>
           </div>
 
-          {/* Recent Solves */}
           <div className="sessions-card">
             <div className="section-header">
               <h2 className="section-title">
